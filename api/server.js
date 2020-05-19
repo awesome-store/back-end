@@ -3,7 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const books = require('../router/books.js');
-const auth = require('../router/auth/signUp.js');
+const auth = require('../router/auth/auth-router.js');
 
 
 const logger = (req, res, next) => {

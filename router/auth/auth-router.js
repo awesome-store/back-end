@@ -7,7 +7,7 @@ router.post('/', (req, res) => {
 
     model.createUser(userData)
     .then(note => {
-      res.status(201).json(note);
+      res.status(201).json({ message: 'User was added!' });
     })
     .catch (err => {
       res.status(500).json({ message: 'Failed to add new user', err });

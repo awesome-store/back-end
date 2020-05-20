@@ -1,41 +1,69 @@
 const router = require('express').Router();
-// const model = require('./auth-model.js');
-const passport = require('passport');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const Authentication = require('./authentication.js');
-const requireSignIn = passport.authenticate('local', {session: false})
+const model = require('./auth-model.js');
+const secrets = require('./secrets.js');
+const validateAccountData = require('./validateAccountData.js');
+const authMiddleware = require('./authenticate-middleware.js');
 
+function generateToken(user) {
+  const payload = {
+    username: user.name,
+    subject: user.id
+  };
+  
+  const options = {
+    expiresIn: '2h',
+  }
 
-router.get('/sign-up', (req, res) => {
-    res.render('authentication/sign-up')
-})
+  return jwt.sign(payload, secrets.jwtSecret, options);
+}
 
-router.post('/sign-up', Authentication.signUp)
+router.post('/register', validateAccountData, (req, res) => {
+    const userData = req.body;
+    const hash = bcrypt.hashSync(userData.password, 10);
+    userData.password = hash;
 
-router.get('/sign-in', (req, res) => {
-    res.render('authentication/sign-in')
-})
+    model.createUser(userData)
+    .then(note => {
+      res.status(201).json({ message: 'User added!' });
+    })
+    .catch (err => {
+      res.status(500).json({ message: 'Failed to add new user', err });
+    });
+});
 
-router.post('/sign-in', Authentication.signIn)
+router.post('/login', validateAccountData, (req, res) => {
+  let { name, password } = req.body;
 
+  model.findByName(name)
+    .then(user => {
+
+      if (user && bcrypt.compareSync(password, user.rows[0].password)) {
+        const token = generateToken(user);
+        res.status(200).json({
+          message: `Welcome ${user.rows[0].name}!`,
+          token,
+        });
+      } else {
+        res.status(401).json({ message: 'Access denied' });
+      }
+    })
+    .catch(error => {
+      res.status(500).json(error);
+    });
+});
+
+router.get('/users', authMiddleware, (req, res) => {
+
+  model.find()
+    .then(users => {
+      res.status(200).json(users);
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Cannot get the list of users', error} );
+    });
+});
 
 module.exports = router;
-
-// const router = require('express').Router();
-// const model = require('./auth-model.js');
-
-
-// router.post('/', (req, res) => {
-//     const userData = req.body;
-
-//     model.createUser(userData)
-//     .then(note => {
-//       res.status(201).json({ message: 'User added!', note });
-//     })
-//     .catch (err => {
-//       res.status(500).json({ message: 'Failed to add new user', err });
-//     });
-// });
-
-
-// module.exports = router;

@@ -39,7 +39,7 @@ router.post('/login', validateAccountData, (req, res) => {
 
   model.findBy('email', email)
     .then(user => {
-      console.log(user)
+      // console.log(user)
       if (user && bcrypt.compareSync(password, user.rows[0].password)) {
         const token = generateToken(user);
         res.status(200).json({
@@ -59,7 +59,7 @@ router.get('/users', authMiddleware, (req, res) => {
 
   model.find()
     .then(users => {
-      res.status(200).json(users);
+      res.status(200).json(users.rows);
     })
     .catch(error => {
       res.status(500).json({ message: 'Cannot get the list of users', error} );

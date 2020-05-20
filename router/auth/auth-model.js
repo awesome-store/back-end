@@ -3,8 +3,7 @@ const { pool } = require('../../config.js')
 module.exports = {
   createUser,
   find,
-  findBy,
-  findByName
+  findBy
 };
 
 
@@ -18,10 +17,6 @@ function find() {
   return pool.query('SELECT * FROM users');
 }
 
-function findByName(name) {
-  return pool.query(`SELECT * FROM users WHERE name = '${name}'`);
-}
-
 function findBy(parameter, filter) {
-  return pool.query(`SELECT * FROM users WHERE ${parameter} = ${filter}`);
+  return pool.query(`SELECT * FROM users WHERE ${parameter} = '${filter}'`);
 }

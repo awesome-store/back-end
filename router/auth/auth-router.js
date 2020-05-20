@@ -35,11 +35,11 @@ router.post('/register', validateAccountData, (req, res) => {
 });
 
 router.post('/login', validateAccountData, (req, res) => {
-  let { name, password } = req.body;
+  let { email, password } = req.body;
 
-  model.findByName(name)
+  model.findBy('email', email)
     .then(user => {
-
+      console.log(user)
       if (user && bcrypt.compareSync(password, user.rows[0].password)) {
         const token = generateToken(user);
         res.status(200).json({
